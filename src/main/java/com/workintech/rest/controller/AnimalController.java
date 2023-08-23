@@ -2,6 +2,7 @@ package com.workintech.rest.controller;
 
 import com.workintech.rest.entity.Animal;
 import com.workintech.rest.mapping.AnimalResponse;
+import com.workintech.rest.validation.AnimalValidation;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
 import org.springframework.beans.factory.annotation.Value;
@@ -57,12 +58,10 @@ public class AnimalController {
 
     @GetMapping("/{id}")
     public AnimalResponse getAnimal(@PathVariable int id) {
-        if (id < 0) {
-            //TODO id is not valid...
+        if (!AnimalValidation.isIdValid(id)) {
             return new AnimalResponse(null, "Id is not valid...", 400);
         }
-        if (!animalMap.containsKey(id)) {
-            //TODO my Map does not contain the value...
+        if (!AnimalValidation.containsKey(animalMap, id)) {
             return new AnimalResponse(null, "Id is not in the list...", 404);
         }
         return new AnimalResponse(animalMap.get(id), "Animal founded.", 200); // message ve status ekleyebilmek için Mapping klasörü altında bu sınıfı açtık.
@@ -70,11 +69,11 @@ public class AnimalController {
 
     @PostMapping("/")
     public AnimalResponse createAnimal(@RequestBody Animal animal) {
-        if (animalMap.containsKey(animal.getId())) {
+        if (AnimalValidation.containsKey(animalMap, animal.getId())) {
             // TODO animal already exist...
             return new AnimalResponse(null, "Id is already exist...", 404);
         }
-        if (animal.getId() < 0 || animal.getName() == null || animal.getName().isEmpty()) {
+        if (!AnimalValidation.isAnimalPropertiesValid(animal)) {
             //TODO animal properties are not valid!!!!...
             return new AnimalResponse(null, "Animal properties are not valid...", 404);
 
@@ -85,11 +84,11 @@ public class AnimalController {
 
     @PutMapping("/{id}")
     public AnimalResponse updateAnimal(@PathVariable int id, @RequestBody Animal animal) {
-        if (!animalMap.containsKey(id)) {
+        if (!AnimalValidation.containsKey(animalMap, id)) {
             // TODO animal is not exist
             return new AnimalResponse(null, "Animal is not exist...", 404);
         }
-        if (animal.getId() < 0 || animal.getName() == null || animal.getName().isEmpty()) {
+        if (!AnimalValidation.isAnimalPropertiesValid(animal)) {
             //TODO animal properties are not valid!!!!....
             return new AnimalResponse(null, "Animal properties are not valid...", 404);
         }
@@ -100,7 +99,7 @@ public class AnimalController {
 
     @DeleteMapping("/{id}")
     public AnimalResponse deleteAnimal(@PathVariable int id) {
-        if(!animalMap.containsKey(id)) {
+        if(!AnimalValidation.containsKey(animalMap, id)) {
             //TODO Animal is not exist
             return new AnimalResponse(null, "Animal is not exist...", 404);
         }
